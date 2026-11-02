@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="TaskFlow - Aplicación web moderna para gestionar tus tareas pendientes de forma rápida y accesible." />
+  <title>TaskFlow — Gestión de Tareas</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-background" aria-hidden="true"></div>
+
+  <main class="app-container" aria-labelledby="app-title">
+    <!-- Encabezado de la aplicación -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 11l3 3L22 4" />
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+          </svg>
+        </div>
+        <div>
+          <h1 id="app-title">TaskFlow</h1>
+          <p class="subtitle">Organiza tu día con claridad y enfoque</p>
+        </div>
+      </div>
+
+      <!-- Fecha actual formateada -->
+      <div id="current-date" class="date-badge" aria-label="Fecha actual"></div>
+    </header>
+
+    <!-- Panel de estadísticas y progreso -->
+    <section class="stats-panel" aria-label="Resumen de tareas">
+      <div class="stats-cards">
+        <div class="stat-card">
+          <span class="stat-label">Pendientes</span>
+          <strong id="count-pending" class="stat-value stat-pending">0</strong>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Completadas</span>
+          <strong id="count-completed" class="stat-value stat-completed">0</strong>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Total</span>
+          <strong id="count-total" class="stat-value">0</strong>
+        </div>
+      </div>
+
+      <div class="progress-wrapper">
+        <div class="progress-header">
+          <span id="progress-label">Progreso completado</span>
+          <span id="progress-percentage">0%</span>
+        </div>
+        <div
+          class="progress-bar-track"
+          role="progressbar"
+          aria-labelledby="progress-label"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+          id="progress-bar-container"
+        >
+          <div id="progress-bar-fill" class="progress-bar-fill"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Formulario para agregar nueva tarea -->
+    <section class="task-form-section" aria-label="Agregar nueva tarea">
+      <form id="task-form" class="task-form" novalidate>
+        <div class="input-group">
+          <label for="task-input" class="sr-only">Escribe una nueva tarea</label>
+          <input
+            type="text"
+            id="task-input"
+            name="task"
+            class="task-input"
+            placeholder="¿Qué necesitas hacer hoy? (Ej. Preparar informe mensual)"
+            maxlength="200"
+            autocomplete="off"
+            aria-describedby="form-error"
+          />
+          <button type="submit" class="btn btn-primary" aria-label="Agregar tarea">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            <span>Agregar</span>
+          </button>
+        </div>
+        <p id="form-error" class="form-error" role="alert" aria-live="assertive" hidden></p>
+      </form>
+    </section>
+
+    <!-- Barra de herramientas: filtros y acciones rápidas -->
+    <section class="toolbar" aria-label="Filtros de tareas">
+      <div class="filter-group" role="group" aria-label="Filtrar tareas por estado">
+        <button type="button" class="filter-btn active" data-filter="all" aria-pressed="true">
+          Todas
+        </button>
+        <button type="button" class="filter-btn" data-filter="pending" aria-pressed="false">
+          Pendientes
+        </button>
+        <button type="button" class="filter-btn" data-filter="completed" aria-pressed="false">
+          Completadas
+        </button>
+      </div>
+
+      <button
+        type="button"
+        id="clear-completed-btn"
+        class="btn-link"
+        hidden
+        aria-label="Eliminar todas las tareas completadas"
+      >
+        Limpiar completadas
+      </button>
+    </section>
+
+    <!-- Lista de tareas y estado vacío -->
+    <section class="tasks-section" aria-label="Lista de tareas">
+      <ul id="task-list" class="task-list" aria-live="polite"></ul>
+
+      <!-- Estado vacío -->
+      <div id="empty-state" class="empty-state" hidden>
+        <div class="empty-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="16" rx="3" />
+            <path d="M9 10h6" />
+            <path d="M9 14h4" />
+          </svg>
+        </div>
+        <h2 id="empty-title" class="empty-title">No tienes tareas registradas</h2>
+        <p id="empty-description" class="empty-description">
+          Añade tu primera tarea en el campo superior para comenzar a organizar tu día.
+        </p>
+      </div>
+
+      <p class="hint-text">
+        💡 <strong>Consejo:</strong> Haz doble clic sobre el texto de cualquier tarea para editarla rápidamente.
+      </p>
+    </section>
+  </main>
+
+  <!-- Región para anuncios de lectores de pantalla -->
+  <div id="sr-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Modal de confirmación para eliminar tarea(s) -->
+  <div
+    id="confirm-modal"
+    class="modal-backdrop"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-title"
+    aria-describedby="modal-message"
+    hidden
+  >
+    <div class="modal-card">
+      <div class="modal-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6" />
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+          <path d="M10 11v6" />
+          <path d="M14 11v6" />
+          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+        </svg>
+      </div>
+      <h2 id="modal-title" class="modal-title">¿Eliminar tarea?</h2>
+      <p id="modal-message" class="modal-message">
+        Esta acción no se puede deshacer.
+      </p>
+      <div class="modal-actions">
+        <button type="button" id="modal-cancel-btn" class="btn btn-secondary">
+          Cancelar
+        </button>
+        <button type="button" id="modal-confirm-btn" class="btn btn-danger">
+          Sí, eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+
